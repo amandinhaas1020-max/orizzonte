@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Orizzonte • Painel de Produtos e Praias</title>
+<style>
+:root{--blue:#163f4a;--blue2:#245866;--bg:#f4f7f8;--card:#fff;--text:#17252b;--muted:#718087;--line:#dce5e8;--accent:#e88632;--danger:#c73b3b;--ok:#278557}
+*{box-sizing:border-box}body{margin:0;font-family:Arial,sans-serif;background:var(--bg);color:var(--text)}
+header{background:var(--blue);color:#fff;padding:22px 28px;position:sticky;top:0;z-index:10}
+header h1{margin:0 0 5px;font-size:24px}header p{margin:0;color:#dbe8eb;font-size:13px}
+.wrap{max-width:1250px;margin:auto;padding:22px}
+.tabs{display:flex;gap:8px;margin-bottom:16px}
+.tab{border:0;border-radius:10px;padding:10px 18px;font-weight:800;cursor:pointer;background:#e9f0f2;color:var(--blue)}
+.tab.active{background:var(--blue);color:#fff}
+.toolbar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:18px}
+button,.file-label{border:0;border-radius:10px;padding:11px 15px;font-weight:800;cursor:pointer;background:var(--blue);color:white}
+button.secondary,.file-label{background:#e9f0f2;color:var(--blue)}
+button.danger{background:#fff0f0;color:var(--danger)}
+input,select,textarea{width:100%;border:1px solid var(--line);border-radius:9px;padding:11px;font:inherit;background:#fff}
+textarea{min-height:100px;resize:vertical}
+label{display:block;font-size:12px;font-weight:800;margin-bottom:6px;color:#4c5c62}
+.grid{display:grid;grid-template-columns:320px 1fr;gap:18px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px;box-shadow:0 5px 18px #163f4a0b}
+.products{display:flex;flex-direction:column;gap:9px}
+.prod{display:grid;grid-template-columns:65px 1fr auto;gap:10px;align-items:center;padding:9px;border:1px solid var(--line);border-radius:12px;cursor:pointer}
+.prod.active{border-color:var(--accent);background:#fff8f1}.prod img{width:65px;height:55px;object-fit:cover;border-radius:8px}.prod small{color:var(--muted)}
+.section{border-top:1px solid var(--line);padding-top:18px;margin-top:18px}.section h3{margin:0 0 14px;color:var(--blue)}
+.fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px}.full{grid-column:1/-1}
+.gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px;margin-top:12px}
+.gitem{position:relative;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:#f6f8f9}.gitem img{display:block;width:100%;height:105px;object-fit:cover}.gitem button{position:absolute;top:5px;right:5px;padding:5px 8px;background:#fff;color:var(--danger)}
+.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:20px}.status{font-size:12px;font-weight:800;color:var(--ok)}
+.checks{display:flex;gap:18px;flex-wrap:wrap}.checks label{display:flex;align-items:center;gap:7px}.checks input{width:auto}
+.view{display:none}.view.active{display:block}
+.overview-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px;margin-top:14px}
+.ovcard{border:1px solid var(--line);border-radius:12px;overflow:hidden;cursor:pointer;background:#fff}
+.ovcard img{display:block;width:100%;height:120px;object-fit:cover}
+.ovcard .ovbody{padding:10px}
+.ovcard b{font-size:13px}
+.ovcard small{color:var(--muted);display:block;margin-top:3px}
+.back-link{background:none;border:0;color:var(--blue);font-weight:800;cursor:pointer;padding:0;margin-bottom:14px;font-size:13px}
+@media(max-width:850px){.grid{grid-template-columns:1fr}.fields{grid-template-columns:1fr}.full{grid-column:auto}}
+</style>
+</head>
+<body>
+<header><h1>ORIZZONTE • Painel de Produtos e Praias</h1><p>Edite todas as informações dos passeios e as fotos da galeria de praias, incluindo várias imagens.</p></header>
+<div class="wrap">
+
+<div class="tabs">
+<button class="tab active" id="tabProducts" onclick="switchView('products')">🛥️ Produtos</button>
+<button class="tab" id="tabBeaches" onclick="switchView('beaches')">🏖️ Fotos de praia</button>
+</div>
+
+<!-- ===================== VIEW: PRODUTOS ===================== -->
+<div class="view active" id="view-products">
+<div class="toolbar">
+<button onclick="newProduct()">＋ Novo produto</button>
+<button class="secondary" onclick="resetProducts()">Restaurar exemplo</button>
+</div>
+<div class="grid">
+<aside class="card">
+<div class="fields">
+<div><label>Pesquisar</label><input id="search" oninput="renderList()" placeholder="Nome do produto"></div>
+<div><label>Categoria</label><select id="filter" onchange="renderList()"><option value="">Todas</option><option>Passeios</option><option>Privativos</option><option>Ubatuba Experience</option><option>Restaurante</option></select></div>
+</div>
+<div class="section"><h3>Produtos</h3><div id="list" class="products"></div></div>
+</aside>
+<main class="card">
+<div id="empty"><h2>Todos os produtos</h2><p>Clique em um produto para editar, ou em "Novo produto" para criar outro.</p><div class="overview-grid" id="overviewGrid"></div></div>
+<form id="form" style="display:none" onsubmit="saveProduct(event)">
+<button type="button" class="back-link" onclick="backToOverview()">‹ Voltar para todos os produtos</button>
+<input type="hidden" id="id">
+<div class="fields">
+<div class="full"><label>Nome do produto</label><input id="name" required></div>
+<div><label>Categoria</label><select id="category"><option>Passeios</option><option>Privativos</option><option>Ubatuba Experience</option><option>Restaurante</option></select></div>
+<div><label>Local / cidade</label><input id="meta"></div>
+<div><label>Preço (R$)</label><input id="price" type="number" min="0" step="0.01"></div>
+<div><label>Produto ativo</label><div class="checks"><label><input id="active" type="checkbox" checked> Aparecer no site</label></div></div>
+<div class="full"><label>Subtítulo / chamada curta</label><input id="subtitle"></div>
+<div class="full"><label>Descrição resumida</label><textarea id="shortDesc"></textarea></div>
+</div>
+
+<div class="section"><h3>📸 Imagens do produto</h3>
+<label>Imagem principal (URL)</label><input id="image">
+<label style="margin-top:12px">Adicionar imagens à galeria</label>
+<input id="galleryFiles" type="file" accept="image/*" multiple>
+<div class="gallery" id="gallery"></div>
+<small>Você pode selecionar várias imagens de uma vez. As imagens escolhidas ficam salvas no produto.</small>
+</div>
+
+<div class="section"><h3>⚓ Embarcação</h3>
+<div class="fields">
+<div><label>Nome da embarcação</label><input id="boatName"></div>
+<div><label>Descrição da embarcação</label><input id="boatDesc"></div>
+<div><label>Capacidade máxima</label><input id="capacity" type="number" min="1"></div>
+<div><label>Foto da embarcação (URL)</label><input id="boatImage"></div>
+<div class="full"><label>Endereço de saída / embarque</label><input id="address"></div>
+</div></div>
+
+<div class="section"><h3>🕐 Horários e reserva</h3>
+<div class="fields">
+<div><label>Horário de saída</label><input id="departureTime" placeholder="10:00"></div>
+<div><label>Horário de retorno</label><input id="returnTime" placeholder="16:30"></div>
+<div><label>Duração</label><input id="duration" placeholder="6h 30min"></div>
+<div><label>Tipo do passeio</label><input id="type" placeholder="Passeio compartilhado"></div>
+<div class="full"><label>Título da reserva</label><input id="bookingTitle"></div>
+<div class="full"><label>Texto da reserva</label><textarea id="bookingText"></textarea></div>
+<div class="full"><label>Aviso / atenção</label><textarea id="bookingWarning"></textarea></div>
+</div></div>
+
+<div class="section"><h3>🗺️ Roteiro completo</h3>
+<div class="fields">
+<div class="full"><label>Sobre o passeio</label><textarea id="about"></textarea></div>
+<div class="full"><label>Roteiro (um item por linha)</label><textarea id="route"></textarea></div>
+<div class="full"><label>Passagem panorâmica (um item por linha)</label><textarea id="panoramic"></textarea></div>
+</div></div>
+
+<div class="section"><h3>✅ O que está incluso</h3>
+<div class="fields">
+<div><label>Estrutura e conforto (um item por linha)</label><textarea id="comfort"></textarea></div>
+<div><label>Segurança (um item por linha)</label><textarea id="safety"></textarea></div>
+<div><label>Atividades e lazer (um item por linha)</label><textarea id="leisure"></textarea></div>
+<div><label>Itens / serviços adicionais (um item por linha)</label><textarea id="extras"></textarea></div>
+</div></div>
+
+<div class="section"><h3>📄 Políticas e informações</h3>
+<div class="fields">
+<div class="full"><label>Política de cancelamento</label><textarea id="cancel"></textarea></div>
+<div class="full"><label>Garantia de segurança do passeio</label><textarea id="security"></textarea></div>
+<div class="full"><label>Observações gerais</label><textarea id="notes"></textarea></div>
+</div></div>
+
+<div class="section"><h3>💳 Pagamento</h3>
+<div class="fields">
+<div><label>Forma 1</label><input id="payment1" placeholder="Pix"></div>
+<div><label>Descrição forma 1</label><input id="payment1desc"></div>
+<div><label>Forma 2</label><input id="payment2" placeholder="Cartão"></div>
+<div><label>Descrição forma 2</label><input id="payment2desc"></div>
+</div></div>
+
+<div class="actions">
+<button type="submit">💾 Salvar produto</button>
+<button type="button" class="danger" onclick="deleteProduct()">Excluir produto</button>
+<span id="status" class="status"></span>
+</div>
+</form>
+</main>
+</div>
+</div>
+
+<!-- ===================== VIEW: PRAIAS ===================== -->
+<div class="view" id="view-beaches">
+<div class="toolbar">
+<button onclick="newBeach()">＋ Nova foto de praia</button>
+<button class="secondary" onclick="exportBeaches()">Exportar praias</button>
+<label class="file-label">Importar praias<input id="importBeachesFile" type="file" accept=".json" hidden onchange="importBeaches(event)"></label>
+<button class="secondary" onclick="resetBeaches()">Restaurar exemplo</button>
+</div>
+<div class="grid">
+<aside class="card">
+<div class="fields">
+<div class="full"><label>Pesquisar</label><input id="beachSearch" oninput="renderBeachList()" placeholder="Nome da praia"></div>
+</div>
+<div class="section"><h3>Praias</h3><div id="beachList" class="products"></div></div>
+</aside>
+<main class="card">
+<div id="beachEmpty"><h2>Selecione uma praia</h2><p>Ou clique em "Nova foto de praia".</p></div>
+<form id="beachForm" style="display:none" onsubmit="saveBeach(event)">
+<input type="hidden" id="bId">
+<div class="fields">
+<div class="full"><label>Nome da praia</label><input id="bName" required></div>
+<div><label>Localização</label><input id="bLocation" placeholder="Ubatuba • SP"></div>
+<div><label>Lado na página (esquerda/direita)</label>
+<select id="bSide"><option value="beach-left">Esquerda</option><option value="beach-right">Direita</option></select></div>
+<div class="full"><label>Texto alternativo (alt)</label><input id="bAlt"></div>
+</div>
+
+<div class="section"><h3>📸 Imagem da praia</h3>
+<label>Imagem principal (URL)</label><input id="bImage">
+<label style="margin-top:12px">Adicionar imagens à galeria</label>
+<input id="bGalleryFiles" type="file" accept="image/*" multiple>
+<div class="gallery" id="bGallery"></div>
+<small>Você pode selecionar várias imagens de uma vez. Ficam salvas nesta praia.</small>
+</div>
+
+<div class="actions">
+<button type="submit">💾 Salvar praia</button>
+<button type="button" class="danger" onclick="deleteBeach()">Excluir praia</button>
+<span id="bStatus" class="status"></span>
+</div>
+</form>
+</main>
+</div>
+</div>
+
+</div>
+
+<script>
+function switchView(v){
+ document.getElementById('view-products').classList.toggle('active', v==='products');
+ document.getElementById('view-beaches').classList.toggle('active', v==='beaches');
+ document.getElementById('tabProducts').classList.toggle('active', v==='products');
+ document.getElementById('tabBeaches').classList.toggle('active', v==='beaches');
+}
+function esc(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
+function readFile(file){return new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result);r.onerror=rej;r.readAsDataURL(file)})}
+
+/* ===================== PRODUTOS ===================== */
+const KEY='orizzonte-products-v2';
+const productExample=[{"id": "p1", "name": "Lancha — Ilha Anchieta", "category": "Passeios", "meta": "Ubatuba", "price": 150, "active": true, "subtitle": "Passeio compartilhado", "shortDesc": "Experiência de lancha pelo litoral de Ubatuba.", "image": "https://images.unsplash.com/photo-1569263979104-865ab7cd8d13?auto=format&fit=crop&w=900&q=85", "gallery": [], "boatName": "New Mar - Roteiro Norte 2", "boatDesc": "Passeio compartilhado para até 14 pessoas", "capacity": 14, "boatImage": "https://images.unsplash.com/photo-1569263979104-865ab7cd8d13?auto=format&fit=crop&w=1400&q=85", "address": "Avenida Leovigildo Dias Vieira, Itaguá, Ubatuba", "departureTime": "10:00", "returnTime": "16:30", "duration": "6h 30min", "type": "Passeio compartilhado", "bookingTitle": "Fazer reserva", "bookingText": "Escolha a data e informe os passageiros.", "bookingWarning": "O horário do passeio é definido pelo operador. Imprevistos como condições climáticas, manutenção da embarcação ou indisponibilidade de tripulação podem levar ao cancelamento, com reembolso integral garantido.", "about": "ROTEIRO 2 - Lado Norte\nMERGULHO na Ilha das Couves", "route": "Check-in às 9:30 h\nEmbarque/Saída às 10:00 h\nRetorno/Chegada às 16:30 h\nIlha das Couves: 40 minutos de permanência para banhos e mergulhos, sem desembarque na praia.\nIlha dos Porcos: 40 minutos de permanência com desembarque na praia.\nPraia da Almada/Engenho: 1h30 de permanência com desembarque na praia. Parada para almoço, com pagamento à parte.\nIlha do Prumirim: 1 hora de permanência com desembarque na praia.", "panoramic": "Ilha Rapada\nToca da Velha\nIlha Rachada, com a menor praia do mundo\nPraia das Conchas\nPraia do Português", "comfort": "Banheiro a bordo\nDucha de água doce\nPlataforma de mergulho\nEscada de acesso ao mar", "safety": "Coletes salva-vidas para adulto e infantil\nMarinheiro habilitado\nEquipamentos de segurança", "leisure": "Boias macarrão\nParadas para banho", "extras": "", "cancel": "Cancelamento gratuito até 48h antes.\nReembolso de 100% até 48h antes.\nReembolso de 50% entre 24h e 48h antes.\nSem reembolso com menos de 24h.\nCancelamento pelo operador: reembolso integral ao cliente.", "security": "Por motivos de segurança, o passeio poderá ser cancelado ou remarcado em caso de condições climáticas adversas, mar agitado, indisponibilidade de tripulação ou manutenção da embarcação. Nesses casos, o valor pago será reembolsado integralmente.", "notes": "O roteiro pode sofrer alterações caso as condições de navegação não sejam favoráveis.", "payment1": "Pix", "payment1desc": "Aprovação imediata", "payment2": "Cartão", "payment2desc": "Até 3x com juros"}, {"id": "p2", "name": "Escuna — Praias e Ilhas", "category": "Passeios", "meta": "Ubatuba", "price": 138, "active": true, "subtitle": "Passeio compartilhado", "shortDesc": "Passeio de escuna pelas praias e ilhas de Ubatuba.", "image": "https://images.unsplash.com/photo-1544551763-46a013bb70d5?auto=format&fit=crop&w=900&q=85", "gallery": []}, {"id": "p3", "name": "Pôr do sol no mar", "category": "Passeios", "meta": "São Sebastião", "price": 120, "active": true, "subtitle": "Passeio compartilhado", "shortDesc": "Passeio para ver o pôr do sol no mar de São Sebastião.", "image": "https://images.unsplash.com/photo-1500534623283-312aade485b7?auto=format&fit=crop&w=900&q=85", "gallery": []}, {"id": "p4", "name": "Ilhas de Caraguá", "category": "Passeios", "meta": "Caraguatatuba", "price": 110, "active": true, "subtitle": "Passeio compartilhado", "shortDesc": "Passeio pelas ilhas de Caraguatatuba.", "image": "https://images.unsplash.com/photo-1500375592092-40eb2168fd21?auto=format&fit=crop&w=900&q=85", "gallery": []}, {"id": "p5", "name": "Lancha Privativa — Ubatuba", "category": "Privativos", "meta": "Ubatuba", "price": 550, "active": true, "subtitle": "Passeio privativo", "shortDesc": "Lancha privativa para grupos em Ubatuba.", "image": "https://images.unsplash.com/photo-1569263979104-865ab7cd8d13?auto=format&fit=crop&w=900&q=85", "gallery": []}, {"id": "p6", "name": "Lancha Privativa — Caraguá", "category": "Privativos", "meta": "Caraguatatuba", "price": 550, "active": true, "subtitle": "Passeio privativo", "shortDesc": "Lancha privativa para grupos em Caraguatatuba.", "image": "https://images.unsplash.com/photo-1544551763-46a013bb70d5?auto=format&fit=crop&w=900&q=85", "gallery": []}, {"id": "p7", "name": "Experiência Privativa no Mar", "category": "Privativos", "meta": "São Sebastião", "price": 600, "active": true, "subtitle": "Passeio privativo", "shortDesc": "Experiência exclusiva no mar de São Sebastião.", "image": "https://images.unsplash.com/photo-1500534623283-312aade485b7?auto=format&fit=crop&w=900&q=85", "gallery": []}, {"id": "p8", "name": "Trilha & Natureza", "category": "Ubatuba Experience", "meta": "Ubatuba", "price": 90, "active": true, "subtitle": "Ubatuba Experience", "shortDesc": "Trilha em meio à natureza de Ubatuba.", "image": "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=900&q=85", "gallery": []}, {"id": "p9", "name": "Cachoeiras de Ubatuba", "category": "Ubatuba Experience", "meta": "Experiência local", "price": 100, "active": true, "subtitle": "Ubatuba Experience", "shortDesc": "Passeio pelas cachoeiras de Ubatuba.", "image": "https://images.unsplash.com/photo-1476673160081-cf065607f449?auto=format&fit=crop&w=900&q=85", "gallery": []}, {"id": "p10", "name": "Dia de aventura", "category": "Ubatuba Experience", "meta": "Natureza", "price": 130, "active": true, "subtitle": "Ubatuba Experience", "shortDesc": "Um dia de aventura na natureza.", "image": "https://images.unsplash.com/photo-1500534623283-312aade485b7?auto=format&fit=crop&w=900&q=85", "gallery": []}];
+let products=JSON.parse(localStorage.getItem(KEY)||'null')||productExample;
+let current=null;
+
+function renderList(){
+ const q=document.getElementById('search').value.toLowerCase(), f=document.getElementById('filter').value;
+ const list=document.getElementById('list'); list.innerHTML='';
+ products.filter(p=>(!q||p.name.toLowerCase().includes(q))&&(!f||p.category===f)).forEach(p=>{
+  const d=document.createElement('div');d.className='prod '+(current===p.id?'active':'');
+  d.innerHTML='<img src="'+(p.image||'')+'"><div><b>'+esc(p.name)+'</b><br><small>'+esc(p.category)+' • R$ '+Number(p.price||0).toFixed(2).replace('.',',')+'</small></div><span>'+(p.active?'●':'○')+'</span>';
+  d.dataset.productId=p.id;list.appendChild(d);
+ });
+ renderOverview();
+}
+function renderOverview(){
+ const grid=document.getElementById('overviewGrid'); if(!grid)return; grid.innerHTML='';
+ products.forEach(p=>{
+  const d=document.createElement('div');d.className='ovcard';
+  d.innerHTML='<img src="'+(p.image||'')+'"><div class="ovbody"><b>'+esc(p.name)+'</b><small>'+esc(p.category)+' • R$ '+Number(p.price||0).toFixed(2).replace('.',',')+'</small></div>';
+  d.dataset.productId=p.id;grid.appendChild(d);
+ });
+}
+function backToOverview(){current=null;document.getElementById('form').style.display='none';document.getElementById('empty').style.display='block';renderList()}
+function newProduct(){
+ const p={id:'p'+Date.now(),name:'Novo produto',category:'Passeios',meta:'Ubatuba',price:0,active:true,gallery:[]};
+ products.push(p);current=p.id;persist();editProduct(p.id);renderList();
+}
+function editProduct(id){
+ current=id;const p=products.find(x=>x.id===id);if(!p)return;
+ document.getElementById('empty').style.display='none';document.getElementById('form').style.display='block';
+ const ids=['id','name','category','meta','price','subtitle','shortDesc','image','boatName','boatDesc','capacity','boatImage','address','departureTime','returnTime','duration','type','bookingTitle','bookingText','bookingWarning','about','route','panoramic','comfort','safety','leisure','extras','cancel','security','notes','payment1','payment1desc','payment2','payment2desc'];
+ ids.forEach(k=>{let e=document.getElementById(k);if(e)e.value=p[k]??''});document.getElementById('active').checked=p.active!==false;
+ renderGallery();renderList();
+}
+function collect(){
+ const p=products.find(x=>x.id===current); if(!p)return;
+ ['name','category','meta','price','subtitle','shortDesc','image','boatName','boatDesc','capacity','boatImage','address','departureTime','returnTime','duration','type','bookingTitle','bookingText','bookingWarning','about','route','panoramic','comfort','safety','leisure','extras','cancel','security','notes','payment1','payment1desc','payment2','payment2desc'].forEach(k=>p[k]=document.getElementById(k).value);
+ p.price=Number(p.price||0);p.capacity=Number(p.capacity||0);p.active=document.getElementById('active').checked;
+}
+function saveProduct(e){e.preventDefault();collect();persist();renderList();document.getElementById('status').textContent='Salvo ✓';setTimeout(()=>document.getElementById('status').textContent='',1600)}
+function persist(){localStorage.setItem(KEY,JSON.stringify(products))}
+function deleteProduct(){if(!current)return;if(confirm('Excluir este produto?')){products=products.filter(p=>p.id!==current);current=null;persist();document.getElementById('form').style.display='none';document.getElementById('empty').style.display='block';renderList()}}
+function renderGallery(){
+ const p=products.find(x=>x.id===current), g=document.getElementById('gallery');g.innerHTML='';
+ (p.gallery||[]).forEach((src,i)=>{const d=document.createElement('div');d.className='gitem';d.innerHTML='<img src="'+src+'"><button type="button" onclick="removeGallery('+i+')">×</button>';g.appendChild(d)});
+}
+document.getElementById('galleryFiles').addEventListener('change',async e=>{
+ const p=products.find(x=>x.id===current);if(!p)return;p.gallery=p.gallery||[];
+ for(const file of e.target.files){const src=await readFile(file);p.gallery.push(src)}
+ e.target.value='';persist();renderGallery();
+});
+function removeGallery(i){const p=products.find(x=>x.id===current);p.gallery.splice(i,1);persist();renderGallery()}
+function resetProducts(){if(confirm('Restaurar os produtos de exemplo? Isso substituirá os produtos atuais.')){products=JSON.parse(JSON.stringify(productExample));current=null;persist();document.getElementById('form').style.display='none';document.getElementById('empty').style.display='block';renderList()}}
+renderList();
+
+/* ===================== PRAIAS ===================== */
+const BKEY='orizzonte-beaches-v1';
+const beachExample=[{"id": "b1", "name": "Praia do Félix", "location": "Ubatuba • SP", "image": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Ubatuba%20Praia%20do%20F%C3%A9lix.jpg", "alt": "Praia do Félix, Ubatuba", "gallery": []}, {"id": "b2", "name": "Praia de Itamambuca", "location": "Ubatuba • SP", "image": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Praia%20do%20Itamambuca%2C%20Brazil%20%28Unsplash%29.jpg", "alt": "Praia de Itamambuca, Ubatuba", "gallery": []}, {"id": "b3", "name": "Praia da Almada", "location": "Ubatuba • SP", "image": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Praia%20da%20Almada%20-%20Ubatuba.jpg", "alt": "Praia da Almada, Ubatuba", "gallery": []}, {"id": "b4", "name": "Praia do Cedro", "location": "Ubatuba • SP", "image": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Praia-do-cedro-ubatuba-080321-001.jpg", "alt": "Praia do Cedro, Ubatuba", "gallery": []}];
+let beaches=JSON.parse(localStorage.getItem(BKEY)||'null')||beachExample;
+let bcurrent=null;
+
+function renderBeachList(){
+ const q=document.getElementById('beachSearch').value.toLowerCase();
+ const list=document.getElementById('beachList'); list.innerHTML='';
+ beaches.filter(b=>!q||b.name.toLowerCase().includes(q)).forEach(b=>{
+  const d=document.createElement('div');d.className='prod '+(bcurrent===b.id?'active':'');
+  d.innerHTML='<img src="'+(b.image||'')+'"><div><b>'+esc(b.name)+'</b><br><small>'+esc(b.location||'')+'</small></div><span>'+(b.side==='beach-right'?'➡':'⬅')+'</span>';
+  d.dataset.beachId=b.id;list.appendChild(d);
+ });
+}
+function newBeach(){
+ const b={id:'b'+Date.now(),name:'Nova praia',location:'Ubatuba • SP',side:'beach-left',image:'',alt:'',gallery:[]};
+ beaches.push(b);bcurrent=b.id;bpersist();editBeach(b.id);renderBeachList();
+}
+function editBeach(id){
+ bcurrent=id;const b=beaches.find(x=>x.id===id);if(!b)return;
+ document.getElementById('beachEmpty').style.display='none';document.getElementById('beachForm').style.display='block';
+ document.getElementById('bId').value=b.id;
+ document.getElementById('bName').value=b.name||'';
+ document.getElementById('bLocation').value=b.location||'';
+ document.getElementById('bSide').value=b.side||'beach-left';
+ document.getElementById('bAlt').value=b.alt||'';
+ document.getElementById('bImage').value=b.image||'';
+ renderBeachGallery();renderBeachList();
+}
+function collectBeach(){
+ const b=beaches.find(x=>x.id===bcurrent); if(!b)return;
+ b.name=document.getElementById('bName').value;
+ b.location=document.getElementById('bLocation').value;
+ b.side=document.getElementById('bSide').value;
+ b.alt=document.getElementById('bAlt').value;
+ b.image=document.getElementById('bImage').value;
+}
+function saveBeach(e){e.preventDefault();collectBeach();bpersist();renderBeachList();document.getElementById('bStatus').textContent='Salvo ✓';setTimeout(()=>document.getElementById('bStatus').textContent='',1600)}
+function bpersist(){localStorage.setItem(BKEY,JSON.stringify(beaches))}
+function deleteBeach(){if(!bcurrent)return;if(confirm('Excluir esta praia?')){beaches=beaches.filter(b=>b.id!==bcurrent);bcurrent=null;bpersist();document.getElementById('beachForm').style.display='none';document.getElementById('beachEmpty').style.display='block';renderBeachList()}}
+function renderBeachGallery(){
+ const b=beaches.find(x=>x.id===bcurrent), g=document.getElementById('bGallery');g.innerHTML='';
+ (b.gallery||[]).forEach((src,i)=>{const d=document.createElement('div');d.className='gitem';d.innerHTML='<img src="'+src+'"><button type="button" onclick="removeBeachGallery('+i+')">×</button>';g.appendChild(d)});
+}
+document.getElementById('bGalleryFiles').addEventListener('change',async e=>{
+ const b=beaches.find(x=>x.id===bcurrent);if(!b)return;b.gallery=b.gallery||[];
+ for(const file of e.target.files){const src=await readFile(file);b.gallery.push(src)}
+ e.target.value='';bpersist();renderBeachGallery();
+});
+function removeBeachGallery(i){const b=beaches.find(x=>x.id===bcurrent);b.gallery.splice(i,1);bpersist();renderBeachGallery()}
+function exportBeaches(){collectBeach();const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(beaches,null,2)],{type:'application/json'}));a.download='orizzonte-praias.json';a.click()}
+function importBeaches(e){const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{beaches=JSON.parse(r.result);bpersist();bcurrent=null;document.getElementById('beachForm').style.display='none';document.getElementById('beachEmpty').style.display='block';renderBeachList()}catch{alert('Arquivo JSON inválido.')}};r.readAsText(f)}
+function resetBeaches(){if(confirm('Restaurar as praias de exemplo? Isso substituirá as praias atuais.')){beaches=JSON.parse(JSON.stringify(beachExample));bcurrent=null;bpersist();document.getElementById('beachForm').style.display='none';document.getElementById('beachEmpty').style.display='block';renderBeachList()}}
+renderBeachList();
+
+// Compatibilidade/robustez: os cliques são tratados por event listeners,
+// evitando problemas quando o servidor aplica políticas que bloqueiam handlers inline.
+document.addEventListener('click', function(ev){
+  const productEl = ev.target.closest && ev.target.closest('[data-product-id]');
+  if(productEl && document.getElementById('view-products').classList.contains('active')){
+    ev.preventDefault();
+    editProduct(productEl.dataset.productId);
+    return;
+  }
+  const beachEl = ev.target.closest && ev.target.closest('[data-beach-id]');
+  if(beachEl && document.getElementById('view-beaches').classList.contains('active')){
+    ev.preventDefault();
+    editBeach(beachEl.dataset.beachId);
+    return;
+  }
+});
+
+// Se o navegador conseguir executar este script, deixa uma marca útil no console.
+console.info('Orizzonte Admin: JavaScript carregado com sucesso.');
+</script>
+</body>
+</html>
