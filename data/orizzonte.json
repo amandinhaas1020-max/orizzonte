@@ -2,6 +2,16 @@
   "schemaVersion": 1,
   "migrationRequired": false,
   "products": [],
-  "beaches": [],
+  "beaches": [
+    {
+      "id": "beach-1792875117396",
+      "name": "horizon",
+      "location": "Ubatuba • SP",
+      "gallery": [],
+      "side": "beach-left",
+      "image": "https://raw.githubusercontent.com/amandinhaas1020-max/orizzonte/main/images/orizzonte/praia-1792875151894.jpeg",
+      "alt": "orizon lanchas"
+    }
+  ],
   "siteText": {}
 }
