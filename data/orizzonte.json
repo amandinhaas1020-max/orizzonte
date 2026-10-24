@@ -2,16 +2,6 @@
   "schemaVersion": 1,
   "migrationRequired": false,
   "products": [],
-  "beaches": [
-    {
-      "id": "beach-1792874474962",
-      "name": "Praia do Fé",
-      "location": "Ubatuba • SP",
-      "gallery": [],
-      "side": "beach-left",
-      "image": "https://raw.githubusercontent.com/amandinhaas1020-max/orizzonte/main/images/orizzonte/praia-1792875079812.jpeg",
-      "alt": "Praia do Félix"
-    }
-  ],
+  "beaches": [],
   "siteText": {}
 }
