@@ -3,22 +3,6 @@
   "migrationRequired": false,
   "products": [
     {
-      "id": "old-escuna-praias-ilhas",
-      "name": "Escuna — Praias e Ilhas",
-      "category": "Passeios",
-      "price": 138,
-      "meta": "Ubatuba",
-      "image": "https://images.unsplash.com/photo-1544551763-46a013bb70d5?auto=format&fit=crop&w=900&q=85",
-      "active": true,
-      "description": "",
-      "duration": "",
-      "capacity": "",
-      "departureTime": "",
-      "returnTime": "",
-      "included": [],
-      "gallery": []
-    },
-    {
       "id": "old-por-do-sol-mar",
       "name": "Pôr do sol no mar",
       "category": "Passeios",
