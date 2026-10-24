@@ -3,22 +3,6 @@
   "migrationRequired": false,
   "products": [
     {
-      "id": "old-passeio-ilha-anchieta",
-      "name": "Lancha — Ilha Anchieta",
-      "category": "Passeios",
-      "price": 150,
-      "meta": "Ubatuba",
-      "image": "https://images.unsplash.com/photo-1569263979104-865ab7cd8d13?auto=format&fit=crop&w=900&q=85",
-      "active": true,
-      "description": "",
-      "duration": "",
-      "capacity": "",
-      "departureTime": "",
-      "returnTime": "",
-      "included": [],
-      "gallery": []
-    },
-    {
       "id": "old-escuna-praias-ilhas",
       "name": "Escuna — Praias e Ilhas",
       "category": "Passeios",
